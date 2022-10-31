@@ -23,10 +23,11 @@
                         class="img-fluid" alt="Sample image">
                 </div>
                 <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
-                    <form action="https://05ba-2409-4070-4d13-942b-90d4-bd13-2fdd-2991.in.ngrok.io/register" method="post">
+                    <form action="http://localhost:3000/login" method="post">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email address</label>
-                            <input type="email" name="username" class="form-control" id="email" aria-describedby="emailHelp">
+                            <input type="email" name="username" class="form-control" id="email"
+                                aria-describedby="emailHelp">
                             <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
                         </div>
                         <div class="mb-3">
@@ -37,8 +38,8 @@
                             <input type="checkbox" class="form-check-input" id="exampleCheck1">
                             <label class="form-check-label" for="exampleCheck1">Remember me</label>
                         </div>
-                        <p>Not </p>
-                        <button type="submit" class="btn btn-primary" onsubmit="submitLoginForm()">Submit</button>
+                        <p>Don't have an Account. <a href="../sign_up/index.html">Register</a> today </p>
+                        <button type="submit" class="btn btn-primary">Log in</button>
                     </form>
                 </div>
             </div>
@@ -57,6 +58,6 @@
         scaleMobile: 1.00
     })
 </script>
-<script src="scripts.js"></script>
+<!-- <script src="scripts.js"></script> -->
 
 </html>

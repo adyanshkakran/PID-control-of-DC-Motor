@@ -34,53 +34,57 @@ app.use(express.json());
 
 app.get('/',(req,res)=>
 {
- // console.log(req.sessionID);
   res.sendFile(__dirname+ '/static/index.html');
-})
-;app.get('/static/sign_in/index.html',(req,res)=>
+});
+
+app.get('/static/sign_in/index.html',(req,res)=>
 {
- // console.log(req.sessionID);
   res.sendFile(__dirname+ '/static/sign_in/index.html');
 });
 
 app.get('/static/sign_in/style.css',(req,res)=>
 {
- // console.log(req.sessionID);
   res.sendFile(__dirname+ '/static/sign_in/style.css');
 });
 
-app.get('/static/sign_in/index.html',(req,res)=>
+app.get('/static/sign_up/index.html',(req,res)=>
 {
- // console.log(req.sessionID);
-  res.sendFile(__dirname+ '/static/sign_in/index.html');
+  res.sendFile(__dirname+ '/static/sign_up/index.html');
+});
+
+app.get('/static/sign_up/style.css',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/sign_up/style.css');
 });
 
 app.get('/static/scripts.js',(req,res)=>
 {
- // console.log(req.sessionID);
   res.sendFile(__dirname+ '/static/scripts.js');
 });
 
 app.get('/static/style.css',(req,res)=>
 {
- // console.log(req.sessionID);
   res.sendFile(__dirname+ '/static/style.css');
 });
 
 app.get('/static/vanta.net.min.js',(req,res)=>
 {
- // console.log(req.sessionID);
   res.sendFile(__dirname+ '/static/vanta.net.min.js');
 });
 
 app.get('/static/index.html',(req,res)=>
 {
- // console.log(req.sessionID);
   res.sendFile(__dirname+ '/static/index.html');
 });
-//defining frontend apis
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/static/index.html');
+
+app.get('/static/experiment/index.html',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/experiment/index.html');
+});
+
+app.get('/static/experiment/style.css',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/experiment/style.css');
 });
 
 //parse cookie function
