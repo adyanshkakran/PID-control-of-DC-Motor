@@ -12,4 +12,19 @@ main {
     width: 80vw;
     background-color: aliceblue;
     border-radius: 1%;
+    display: flex;
+    justify-content: space-around;
+    padding: 2rem;
+}
+
+.camera {
+    height: 40vh;
+    width: 30vw;
+    background-color: aqua;
+}
+
+.graph {
+    height: 40vh;
+    width: 30vw;
+    background-color: aqua;
 }
