@@ -27,9 +27,13 @@ app.use(express.urlencoded({ extended: true}));
 
 app.use(express.json());
 
+
+//static files 
+
+
 //defining frontend apis
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/static/login.html');
+  res.sendFile(__dirname + '/static/index.html');
 });
 
 //parse cookie function
@@ -115,6 +119,42 @@ async function sendMailToUser(emailId,content)
   });
 } 
 
+app.get('/static/sign_in/index.html',(req,res)=>
+{
+ // console.log(req.sessionID);
+  res.sendFile(__dirname+ '/static/index.html');
+});
+
+app.get('/static/sign_in/style.css',(req,res)=>
+{
+ // console.log(req.sessionID);
+  res.sendFile(__dirname+ '/static/style.css');
+});
+
+app.get('/static/sign_in/index.html',(req,res)=>
+{
+ // console.log(req.sessionID);
+  res.sendFile(__dirname+ '/static/index.html');
+});
+
+app.get('/static/scripts.js',(req,res)=>
+{
+ // console.log(req.sessionID);
+  res.sendFile(__dirname+ '/static/scripts.js');
+});
+
+app.get('/static/style.css',(req,res)=>
+{
+ // console.log(req.sessionID);
+  res.sendFile(__dirname+ '/static/style.css');
+});
+
+app.get('/static/vanta.net.min.js',(req,res)=>
+{
+ // console.log(req.sessionID);
+  res.sendFile(__dirname+ '/static/vanta.net.min.js');
+});
+
 //this registers
 app.post("/register",async function (req, res){
   const givenUsername=req.body.username;  //Body has username 
@@ -127,12 +167,14 @@ app.post("/register",async function (req, res){
   ret = await sendMailToUser(req.body.username,password);
   if(ret==true)
   {
-     res.redirect("/");
-     db.set(givenUsername,password);
+    console.log("here");
+    res.redirect("/static/index.html");
+    db.set(givenUsername,password);
   }
   else 
   {
-    res.redirect("/");
+    console.log("there");
+    res.redirect("/static/index.html");
     // res.send("not done"); //not done
   }
 });
@@ -145,6 +187,9 @@ app.get('/logout', function(req,res){
 //used for debugging
 
 //starting our server
+
+
+
 app.listen(3000, function () {
     console.log("Server is running on localhost:3000");
 });
