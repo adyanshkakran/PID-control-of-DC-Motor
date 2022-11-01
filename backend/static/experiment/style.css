@@ -8,23 +8,37 @@ body {
 }
 
 main {
-    height: 80vh;
-    width: 80vw;
+    height: 82vh;
+    width: 82vw;
     background-color: aliceblue;
     border-radius: 1%;
+    padding: 2rem;
+}
+
+.container{
     display: flex;
     justify-content: space-around;
-    padding: 2rem;
 }
 
 .camera {
     height: 40vh;
     width: 30vw;
-    background-color: aqua;
+    background-color: darkblue;
 }
 
 .graph {
     height: 40vh;
     width: 30vw;
-    background-color: aqua;
+    background-color: darkblue;
+}
+
+/* .sliders {
+    display: flex;
+    justify-content: space-between;
+} */
+
+.submit-form{
+    display: block;
+    margin-left: auto;
+    margin-right: 0;
 }
