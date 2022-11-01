@@ -1,6 +1,6 @@
 const JSONdb = require('simple-json-db');
 const db = new JSONdb('./UserCreds.json');
-
+const loginTimedb = new JSONdb('./UserLoginTime.json');
 //for mailing
 const nodemailer = require('nodemailer');
 
@@ -15,6 +15,9 @@ const express = require("express");
 var session;
 const app = express();
 const oneDay = 1000 * 60 * 60 * 24;
+
+
+
 app.use(cookieParser());
 app.use(sessions({
     secret: "thisismysecrctekeyfhrgfgrfrty84fwir767",
@@ -31,6 +34,26 @@ app.use(express.json());
 //static files 
 
 
+const myLogger = function (req, res, next) {
+  const cur=Date.now();
+  const cookies=parseCookies(req);
+  const user=cookies['name'];
+  console.log(user);
+  console.log(cur);
+  console.log(cur-loginTimedb.get(user));
+  if(user!="no user loginned" && cur-loginTimedb.get(user)>1500*1000)
+  {
+    console.log("logging out");
+    res.cookie('name', "no user loginned");
+    res.send("NULL");
+  }
+  else 
+  {
+    next()
+  }
+}
+
+app.use(myLogger)
 
 app.get('/',(req,res)=>
 {
@@ -79,7 +102,14 @@ app.get('/static/index.html',(req,res)=>
 
 app.get('/static/experiment/index.html',(req,res)=>
 {
-  res.sendFile(__dirname+ '/static/experiment/index.html');
+  const cookies=parseCookies(req);
+  const user=cookies['name'];
+  if(user=="no user loginned")
+  {
+    res.redirect("/");
+  }
+  else
+    res.sendFile(__dirname+ '/static/experiment/index.html');
 });
 
 app.get('/static/experiment/style.css',(req,res)=>
@@ -87,6 +117,20 @@ app.get('/static/experiment/style.css',(req,res)=>
   res.sendFile(__dirname+ '/static/experiment/style.css');
 });
 
+app.get('/getTimeSpent',(req,res)=>
+{
+  const cur=Date.now();
+  const cookies=parseCookies(req);
+  const user=cookies['name'];
+  if(user=="no user loginned")
+  {
+    res.send("0");
+  }
+  else
+  {
+    res.send((((cur-loginTimedb.get(user)))/1000).toString());
+  }
+});
 //parse cookie function
 function parseCookies (request) {
   const list = {};
@@ -127,7 +171,8 @@ function (req, res) {
       const cookies=parseCookies(req);
       console.log("lol");
       console.log(cookies['name']);
-      res.send("correct password");
+      loginTimedb.set(givenUsername,Date.now());
+      res.redirect("/static/experiment/index.html");
   }
   else
   {
@@ -198,12 +243,11 @@ app.get('/logout', function(req,res){
   res.cookie('name', "no user loginned");
   res.redirect("/");
 }); 
+
 //it just tells us which user is loginned
 //used for debugging
 
 //starting our server
-
-
 
 app.listen(3000, function () {
     console.log("Server is running on localhost:3000");
