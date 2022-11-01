@@ -215,6 +215,10 @@ async function sendMailToUser(emailId,content)
   });
 } 
 
+app.get('/getGraph', function(req,res){
+  res.redirect("https://thingspeak.com/channels/1764340/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line");
+}); 
+
 //this registers
 app.post("/register",async function (req, res){
   const givenUsername=req.body.username;  //Body has username 
