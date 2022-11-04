@@ -22,22 +22,23 @@
         </div>
         <form class="form">
             <div class="sliders">
-                <!-- <div> -->
+                <div>
                     <label for="kp" class="form-label"><b>K<sub>p</sub> (0-1000)</b></label>
                     <input type="range" min="0" max="1000" class="form-range" id="kp">
                     <label for="ki" class="form-label"><b>K<sub>i</sub> (0-1000)</b></label>
                     <input type="range" min="0" max="1000" class="form-range" id="ki">
-                <!-- </div>
-                <div> -->
+                </div>
+                <div>
                     <label for="kd" class="form-label"><b>K<sub>d</sub> (0-1000)</b></label>
                     <input type="range" min="0" max="1000" class="form-range" id="kd">
                     <label for="angle" class="form-label"><b>Required Angle (0<sup>o</sup> - 360<sup>o</sup>)</b></label>
                     <input type="range" class="form-range" min="0" max="360" id="angle">
-                <!-- </div> -->
+                </div>
             </div>
             <button type="submit" class="btn btn-primary submit-form">Start Simulation</button>
         </form>
     </main>
+    <button class="btn btn-primary log-out">Log out</button>
 </body>
 <script defer>
     VANTA.NET({

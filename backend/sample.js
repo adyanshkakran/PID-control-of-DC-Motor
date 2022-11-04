@@ -13,6 +13,8 @@ const { ensureAuthenticated } = require('connect-ensure-authenticated');
 cookieParser = require('cookie-parser');
 const express = require("express");
 var session;
+
+const PORT = process.env.PORT || 5000;
 const app = express();
 const oneDay = 1000 * 60 * 60 * 24;
 
@@ -31,29 +33,7 @@ app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
 
 
-//static files 
-
-
-const myLogger = function (req, res, next) {
-  const cur=Date.now();
-  const cookies=parseCookies(req);
-  const user=cookies['name'];
-  console.log(user);
-  console.log(cur);
-  console.log(cur-loginTimedb.get(user));
-  if(user!="no user loginned" && cur-loginTimedb.get(user)>1500*1000)
-  {
-    console.log("logging out");
-    res.cookie('name', "no user loginned");
-    res.send("NULL");
-  }
-  else 
-  {
-    next()
-  }
-}
-
-app.use(myLogger)
+//static files
 
 app.get('/',(req,res)=>
 {
@@ -115,6 +95,55 @@ app.get('/static/experiment/index.html',(req,res)=>
 app.get('/static/experiment/style.css',(req,res)=>
 {
   res.sendFile(__dirname+ '/static/experiment/style.css');
+});
+
+app.get('/static/experiment/scripts.js',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/experiment/scripts.js');
+});
+
+app.get('/static/experiments_page/index.html',(req,res)=>
+{
+  const cookies=parseCookies(req);
+  const user=cookies['name'];
+  if(user=="no user loginned")
+  {
+    res.redirect("/");
+  }
+  else
+    res.sendFile(__dirname+ '/static/experiments_page/index.html');
+});
+
+app.get('/static/experiments_page/style.css',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/experiments_page/style.css');
+});
+
+app.get('/static/experiments_page/scripts.js',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/experiments_page/scripts.js');
+});
+
+app.get('/static/experiment_theory/index.html',(req,res)=>
+{
+  const cookies=parseCookies(req);
+  const user=cookies['name'];
+  if(user=="no user loginned")
+  {
+    res.redirect("/");
+  }
+  else
+    res.sendFile(__dirname+ '/static/experiment_theory/index.html');
+});
+
+app.get('/static/experiment_theory/style.css',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/experiment_theory/style.css');
+});
+
+app.get('/static/experiment_theory/scripts.js',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/experiment_theory/scripts.js');
 });
 
 app.get('/getTimeSpent',(req,res)=>
@@ -232,13 +261,15 @@ app.post("/register",async function (req, res){
   if(ret==true)
   {
     console.log("here");
-    res.sendFile(__dirname+ '/static/sign_in/index.html');
+    res.redirect("/");
+    //res.sendFile(__dirname+ '/static/sign_in/index.html');
     db.set(givenUsername,password);
   }
   else 
   {
     console.log("there");
-    res.sendFile(__dirname+ '/static/sign_in/index.html');
+    res.redirect("/");
+    // res.sendFile(__dirname+ '/static/sign_in/index.html');
     // res.send("not done"); //not done
   }
 });
@@ -253,6 +284,6 @@ app.get('/logout', function(req,res){
 
 //starting our server
 
-app.listen(3000, function () {
-    console.log("Server is running on localhost:3000");
+app.listen(PORT, function () {
+    console.log(`Server is running on localhost:${PORT}`);
 });

@@ -10,7 +10,7 @@ body {
 main {
     height: 80vh;
     width: 80vw;
-    background-color: aliceblue;
+    background-color: rgb(176, 201, 224);
     border-radius: 1%;
 }
 

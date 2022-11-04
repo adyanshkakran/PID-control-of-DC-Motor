@@ -15,32 +15,14 @@ main {
     padding: 2rem;
 }
 
-.container{
+.card-container{
     display: flex;
     justify-content: space-around;
 }
 
-.camera {
-    height: 40vh;
-    width: 30vw;
-    background-color: darkblue;
-}
-
-.graph {
-    height: 40vh;
-    width: 30vw;
-    background-color: darkblue;
-}
-
-/* .sliders {
-    display: flex;
-    justify-content: space-between;
-} */
-
-.submit-form{
-    display: block;
-    margin-left: auto;
-    margin-right: 0;
+.card{
+    cursor: pointer;
+    margin-right: 1rem;
 }
 
 .log-out {

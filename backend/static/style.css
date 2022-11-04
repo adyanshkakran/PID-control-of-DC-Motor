@@ -1,4 +1,4 @@
-.heading{
+.heading {
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
     height: inherit;
@@ -7,40 +7,48 @@
     align-items: center;
     color: yellow;
     font-size: 3rem;
-    transform: translate(0,-2vh);
+    transform: translate(0, -2vh);
 }
-.navbar{
-    background-color: #0000;
-    height: 7vh;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-body{
+
+body {
     margin: 0;
 }
-main{
+
+main {
     height: 100vh;
     width: 100vw;
 }
-button{
+
+.btn-primary {
     z-index: 2;
-    height: 2rem;
-    width: 5rem;
-    border-radius: 10%;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: medium;
-    background-color: rgb(191, 0, 255);
-    border: none;
     position: absolute;
-    color: white;
+    font-size: large;
+    background-color: blueviolet;
+    border: none;
+    height: 3rem;
+    width: 7.5rem;
+    font-family: Arial, Helvetica, sans-serif;
     cursor: pointer;
 }
-.signin{
-    top: 0.3rem;
-    right: 5.3rem;
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:visited,
+.btn-primary:focus {
+    background-color: rgb(56, 21, 90) !important;
 }
-.signup{
+
+.btn-primary:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.sign-in {
+    top: 0.3rem;
+    right: 8rem;
+}
+
+.sign-up {
     top: 0.3rem;
     right: 0;
 }
