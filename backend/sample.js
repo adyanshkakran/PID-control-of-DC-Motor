@@ -14,7 +14,7 @@ cookieParser = require('cookie-parser');
 const express = require("express");
 var session;
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const app = express();
 const oneDay = 1000 * 60 * 60 * 24;
 
@@ -185,28 +185,44 @@ app.get("/debug",function(req,res)
 });
 
 //this checks the user creds and sets in cookie
+
+app.get("/login",function (req, res)
+{
+  const cookies=parseCookies(req);
+  const user=cookies['name'];
+  if(user=="no user loginned")
+  {
+    res.redirect("/static/sign_in/index.html");
+  }
+  else 
+  {
+    res.redirect("/static/experiments_page/index.html");
+  }
+
+});
+
 app.post("/check",
 function (req, res) {
-  const givenUsername=req.body.username;
-  const givenPassword=req.body.password;
-  const actualPassword=db.get(givenUsername);
-  console.log(req.body.username);
-  if(givenPassword==actualPassword)
-  {
-      session=req.session;
-      session.userid=req.body.username;
-      console.log(session.userid);
-      res.cookie('name', givenUsername);
-      const cookies=parseCookies(req);
-      console.log("lol");
-      console.log(cookies['name']);
-      loginTimedb.set(givenUsername,Date.now());
-      res.redirect("/static/experiment/index.html");
-  }
-  else
-  {
-      res.send("wrong password");
-  }
+    const givenUsername=req.body.username;
+    const givenPassword=req.body.password;
+    const actualPassword=db.get(givenUsername);
+    console.log(req.body.username);
+    if(givenPassword==actualPassword)
+    {
+        session=req.session;
+        session.userid=req.body.username;
+        console.log(session.userid);
+        res.cookie('name', givenUsername);
+        const cookies=parseCookies(req);
+        console.log("lol");
+        console.log(cookies['name']);
+        loginTimedb.set(givenUsername,Date.now());
+        res.redirect("/static/experiments_page/index.html");
+    }
+    else
+    {
+        res.send("wrong password");
+    }
 });
 
 //return  1 if successfully sent
@@ -275,6 +291,7 @@ app.post("/register",async function (req, res){
 });
 
 app.get('/logout', function(req,res){
+  console.log("hey");
   res.cookie('name', "no user loginned");
   res.redirect("/");
 }); 
