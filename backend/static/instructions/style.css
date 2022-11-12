@@ -14,3 +14,12 @@ main {
     border-radius: 1%;
     padding: 2rem;
 }
+
+button {
+    /* position: absolute;
+    bottom: 1rem;
+    right: 1rem; */
+    display: block;
+    margin-left: auto;
+    margin-right: 0;
+}

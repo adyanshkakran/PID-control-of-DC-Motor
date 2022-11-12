@@ -148,6 +148,16 @@ app.get('/static/experiment_theory/scripts.js',(req,res)=>
   res.sendFile(__dirname+ '/static/experiment_theory/scripts.js');
 });
 
+app.get('/static/instructions/index.html',(req,res) => 
+{
+  res.sendFile(__dirname+ '/static/instructions/index.html');
+});
+
+app.get('/static/instructions/style.css',(req,res) => 
+{
+  res.sendFile(__dirname+ '/static/instructions/style.css');
+});
+
 app.get('/getTimeSpent',(req,res)=>
 {
   const cur=Date.now();
