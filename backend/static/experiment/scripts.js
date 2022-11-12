@@ -80,5 +80,13 @@ function startSim() {
     let ki = $(".ki-input").val();
     let kd = $(".kd-input").val();
     let angle = $(".angle-input").val();
-    console.log(kp,ki,kd,angle)
+    fetch('https://9547-14-139-82-6.in.ngrok.io/mqtt',{
+        method: 'POST',
+        // body: 'field2='+kp+'&field3='+ki+'&field4='+kd+'&field5='+angle
+        body : kp+','+ki+','+kd+','+angle
+    })
+}
+
+function resetExperiment(){
+    
 }
