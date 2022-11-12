@@ -262,14 +262,19 @@ async function sendMailToUser(emailId,content)
   });
 } 
 
-function postToMQTT(field,value)
+function postToMQTT(body)
 {
   var http = require('https');
   //2,3,4,5
-  var path='/update?api_key=ZIPERNKS5LI66JUD&field';
-  path+=field;
-  path+='=';
-  path+=value;
+  var path='/update?api_key=0EWEDZ5X4K5OT1B9';
+  path+='&field2=';
+  path+=body.kp;
+  path+='&field3='
+  path+=body.ki;
+  path+='&field3=';
+  path+=body.kd;
+  path+='&field4='
+  path+=body.angle;
   var options = {
     host: 'api.thingspeak.com',
     path: path
@@ -286,7 +291,6 @@ function postToMQTT(field,value)
     response.on('end', function () {
       console.log(str);
     });
-
   }
   http.request(options, callback).end();
 
@@ -296,9 +300,11 @@ function postToMQTT(field,value)
 
 app.post('/mqtt', function(req,res){
   const arguments=req.body;
-  console.log(req.body);
+  console.log(arguments);
   //str. split(',') .
   //postToMQTT(1,3);
+  postToMQTT(arguments);
+
 });
 
 app.get('/getGraph', function(req,res){

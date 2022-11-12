@@ -80,11 +80,26 @@ function startSim() {
     let ki = $(".ki-input").val();
     let kd = $(".kd-input").val();
     let angle = $(".angle-input").val();
-    fetch('https://9547-14-139-82-6.in.ngrok.io/mqtt',{
+  /*  fetch('../../../mqtt',{
         method: 'POST',
         // body: 'field2='+kp+'&field3='+ki+'&field4='+kd+'&field5='+angle
-        body : kp+','+ki+','+kd+','+angle
+       // body : kp+','+ki+','+kd+','+angle
+       body:"fjdsn"
+    })*/
+    fetch('../../../mqtt', {
+    method: 'POST', // or 'PUT'
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({kp:kp,ki:ki,kd:kd,angle:angle}),
     })
+    .then((response) => response.json())
+    .then((data) => {
+        console.log('Success:', data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
 
 function resetExperiment(){
