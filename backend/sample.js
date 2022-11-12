@@ -7,6 +7,8 @@ const nodemailer = require('nodemailer');
 //for generating random password
 var generator = require('generate-password');
 
+//for mqtt
+
 //cookie session
 var sessions = require('express-session');
 const { ensureAuthenticated } = require('connect-ensure-authenticated');
@@ -259,6 +261,45 @@ async function sendMailToUser(emailId,content)
    });
   });
 } 
+
+function postToMQTT(field,value)
+{
+  var http = require('https');
+  //2,3,4,5
+  var path='/update?api_key=ZIPERNKS5LI66JUD&field';
+  path+=field;
+  path+='=';
+  path+=value;
+  var options = {
+    host: 'api.thingspeak.com',
+    path: path
+  };
+  callback = function(response) {
+    var str = '';
+  
+    //another chunk of data has been received, so append it to `str`
+    response.on('data', function (chunk) {
+      str += chunk;
+    });
+  
+    //the whole response has been received, so we just print it out here
+    response.on('end', function () {
+      console.log(str);
+    });
+
+  }
+  http.request(options, callback).end();
+
+}
+
+//postToMQTT(1,4);
+
+app.post('/mqtt', function(req,res){
+  const arguments=req.body;
+  console.log(req.body);
+  //str. split(',') .
+  //postToMQTT(1,3);
+});
 
 app.get('/getGraph', function(req,res){
   res.redirect("https://thingspeak.com/channels/1764340/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line");
