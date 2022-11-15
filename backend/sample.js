@@ -96,7 +96,7 @@ app.get('/static/index.html',(req,res)=>
 app.get('/static/experiment/index.html',(req,res)=>
 {
   const cookies=parseCookies(req);
-  const user=cookies['name'];
+  const user=cookies['pid_user'];
   if(user=="no user loginned")
   {
     res.redirect("/");
@@ -118,13 +118,16 @@ app.get('/static/experiment/scripts.js',(req,res)=>
 app.get('/static/experiments_page/index.html',(req,res)=>
 {
   const cookies=parseCookies(req);
-  const user=cookies['name'];
-  if(user=="no user loginned")
+  const user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
   {
     res.redirect("/");
   }
   else
+  {
+    console.log(user);
     res.sendFile(__dirname+ '/static/experiments_page/index.html');
+  }
 });
 
 app.get('/static/experiments_page/style.css',(req,res)=>
@@ -140,8 +143,8 @@ app.get('/static/experiments_page/scripts.js',(req,res)=>
 app.get('/static/experiment_theory/index.html',(req,res)=>
 {
   const cookies=parseCookies(req);
-  const user=cookies['name'];
-  if(user=="no user loginned")
+  const user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
   {
     res.redirect("/");
   }
@@ -173,8 +176,8 @@ app.get('/getTimeSpent',(req,res)=>
 {
   const cur=Date.now();
   const cookies=parseCookies(req);
-  const user=cookies['name'];
-  if(user=="no user loginned")
+  const user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
   {
     res.send("0");
   }
@@ -203,8 +206,8 @@ function parseCookies (request) {
 app.get("/debug",function(req,res)
 {
   const cookies=parseCookies(req);
-  console.log(cookies['name']);
-  res.send(cookies['name']);
+  console.log(cookies['pid_user']);
+  res.send(cookies['pid_user']);
 });
 
 //this checks the user creds and sets in cookie
@@ -212,8 +215,8 @@ app.get("/debug",function(req,res)
 app.get("/login",function (req, res)
 {
   const cookies=parseCookies(req);
-  const user=cookies['name'];
-  if(user=="no user loginned")
+  const user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
   {
     res.redirect("/static/sign_in/index.html");
   }
@@ -224,12 +227,29 @@ app.get("/login",function (req, res)
 
 });
 
+app.post('/change_password',async (req,res)=>
+{
+  const cookies=parseCookies(req);
+  var user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
+  {
+    res.redirect("/");
+  }
+  else 
+  {
+    const new_password=req.body.new_password;
+    console.log(new_password);
+    await client.set(user,new_password);
+    db.set(user,new_password);
+  }
+});
+
 app.post("/check",
 async function (req, res) {
     const givenUsername=req.body.username;
     const givenPassword=req.body.password;
     var actualPassword=db.get(givenUsername);
-    actualPassword=await client.get(givenUsername);
+    //actualPassword=await client.get(givenUsername);
     console.log(actualPassword);
     console.log(req.body.username);
     if(givenPassword==actualPassword)
@@ -237,10 +257,10 @@ async function (req, res) {
         session=req.session;
         session.userid=req.body.username;
         console.log(session.userid);
-        res.cookie('name', givenUsername);
+        res.cookie('pid_user', givenUsername);
         const cookies=parseCookies(req);
         console.log("lol");
-        console.log(cookies['name']);
+        console.log(cookies['pid_user']);
         res.redirect("/static/experiments_page/index.html");
     }
     else
@@ -372,7 +392,7 @@ app.post("/register",async function (req, res){
 
 app.get('/logout', function(req,res){
   console.log("hey");
-  res.cookie('name', "no user loginned");
+  res.cookie('pid_user', "no user loginned");
   res.redirect("/");
 }); 
 
