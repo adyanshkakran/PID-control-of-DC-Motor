@@ -23,6 +23,7 @@ main {
 .camera {
     height: 40vh;
     width: 30vw;
+    display: inline;
     background-color: darkblue;
 }
 
