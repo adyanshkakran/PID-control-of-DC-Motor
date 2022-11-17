@@ -21,10 +21,11 @@
             <div class="theory">
                 <h3></h3>
                 <h4>Use this simulation to learn how to use the PID Controller to control motor angle</h4>
-                <ol>
+                <ol style="font-size: medium;">
                     <li>You are given four sliders connected to a text box. Enter the value you want to enter into these text boxes.</li>
                     <li>For K<sub>p</sub>,K<sub>i</sub> and K<sub>d</sub>, the legal values are -100 to 100 while for required angle it is 0<sup>o</sup> to 360<sup>o</sup></li>
-                    
+                    <li>Press `Star Simulation` to begin the simulation and watch how as the motor attains the angle in the camera.</li>
+                    <li>There is also a graph between position and time passed which shows how PID stabilized the error using the values you gave.</li>
                 </ol>
             </div>
             <button class="btn btn-primary" onclick="localStorage.setItem('timeLeft','900');location.href = '../experiment/index.html';">Proceed to

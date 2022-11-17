@@ -1,8 +1,3 @@
-function changeSlider(){
-    let kp = document.getElementById("kp")
-    
-}
-
 setTimeout(() => {
     location.href = '../../logout'
 }, parseInt(localStorage.getItem("timeLeft"))*1000);
@@ -76,6 +71,7 @@ bind_to_slider(".kd-slider",".kd-input",-100,100,0,0,0.1);
 bind_to_slider(".angle-slider",".angle-input",0,360,180,1);
 
 function startSim() {
+    
     let kp = $(".kp-input").val();
     let ki = $(".ki-input").val();
     let kd = $(".kd-input").val();

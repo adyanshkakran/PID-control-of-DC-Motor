@@ -22,11 +22,6 @@ client.on('error', (err) => console.log('Redis Client Error', err));
 
 await client.connect();
 
-await client.set('key', 'value');
-const value = await client.get('key');
-console.log("lmao we are getting");
-console.log(value);
-
 var session;
 
 const PORT = process.env.PORT || 3000;
@@ -337,16 +332,15 @@ function postToMQTT(body)
   http.request(options, callback).end();
 }
 
-app.post('/mqtt', function(req,res){
-  const {argument}=req.body;
-  console.log(arguments);
+app.post('/mqtt', async function(req,res){
+  console.log(req.body);
   //sdeletePrevious();
-  postToMQTT(arguments);
+  postToMQTT(req.body);
 });
 
 app.get('/getGraph', function(req,res){
   res.redirect("https://thingspeak.com/channels/1764340/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line");
-}); 
+});
 
 //
 //this registers
