@@ -337,20 +337,6 @@ function postToMQTT(body)
   http.request(options, callback).end();
 }
 
-//postToMQTT(1,4);
-
-function deletePrevious()
-{
-/*  const axios = require('axios');
-  axios.delete('https://thingspeak.com/channels/1922377/feeds.json')
-    .then((res) => {
-        console.log(`Status: ${res.status}`);
-    }).catch((err) => {
-        console.error(err);
-    });
-*/
-}
-
 app.post('/mqtt', function(req,res){
   const {argument}=req.body;
   console.log(arguments);
