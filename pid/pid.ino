@@ -5,6 +5,9 @@
 #include <ThingSpeak.h>
 #include <HTTPClient.h>
 
+HTTPClient http;
+IPAddress ip;
+WiFiClient client;
 #define CSE_IP "esw-onem2m.iiit.ac.in"  
 #define CSE_PORT 443
 #define OM2M_ORGIN "nHP#Sx:i2iYGl"
@@ -14,10 +17,10 @@
 #define INTERVAL 15000L
 
 const char * ntpServer = "pool.ntp.org"; 
-HTTPClient http;
 
-const char *ssid = "Redmi";
-const char *password = "arushiisgreat";
+
+const char *ssid = "adyansh";
+const char *password = "password";
 const char *server = "mqtt3.thingspeak.com";
 
 int writeChannelID = 1922377;
@@ -26,11 +29,10 @@ const char *writeAPIKey = "0EWEDZ5X4K5OT1B9";
 const char *clientID = "KRwGOj0dFAcoDTw3Ky4aISs";
 const char *mqttUser = clientID;
 const char *mqttPwd = "oJFDlzrM/o4kx3Of1T5C7LrY";
-IPAddress ip;
-WiFiClient client;
 
+int uploading = 0;
 
-PubSubClient mqttClient(server, 8883, client);
+PubSubClient mqttClient(server,1883, client);
 
 int IN1 = 18;
 int IN2 = 19;
@@ -79,22 +81,49 @@ void mqttPublish()
     mqttClient.publish(topicString.c_str(), dataString.c_str());
   
 }
-
+float input[4];
+float target;
 void mqttSubscriptionCallback( char* topic, byte* payload, unsigned int length ) {
-  // Print the details of the message that was received to the serial monitor.
+//  if(uploading)
+//    return;
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
+  int semi_c=0;
+  int inpno=0;
+  String inp_val="";
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
+    if((char)payload[i]==':'){
+      semi_c++;
+      if(semi_c>5){
+        while((char)payload[i+1]!=','){
+          i++;
+          inp_val+=(char)payload[i];
+        }
+        input[inpno]=inp_val.toFloat();
+        inpno++;
+        inp_val="";
+      }
+    }
+    
   }
+  kp = input[0];
+  kd =  input[1];
+  ki =  input[2];
+  target= input[3];
+  Serial.println(kp);
+  Serial.println(ki);
+  Serial.println(kd);
+  Serial.println(target);
   Serial.println();
+  
 }
 
 // Subscribe to ThingSpeak channel for updates.
 void mqttSubscribe( long subChannelID ){
   
-  String myTopic = "channels/"+String( subChannelID )+"/subscribe";
+  String myTopic = "channels/"+String(subChannelID)+"/subscribe";
   Serial.println(mqttClient.subscribe(myTopic.c_str(),0));
   
 }
@@ -153,14 +182,15 @@ void PID_control(float target)
     uint lastTime = millis();
     bool use_integral = false;
     int md = 0;
-    while(mqttClient.connected() == NULL)
-    {
-      Serial.println("Connecting to mqTT server");
-      mqttClient.connect(clientID, mqttUser, mqttPwd);
-      // mqttSubscribe(writeChannelID);
-    }
-    mqttClient.loop();
+    
     while(millis()- startTime < PID_TIMER){
+      while(mqttClient.connected() == NULL)
+      {
+        Serial.println("Connecting to mqTT server");
+        mqttClient.connect(clientID, mqttUser, mqttPwd);
+        mqttSubscribe(writeChannelID);
+      }
+      mqttClient.loop();
       if(millis() - lastTime > 100){
         setMotor(0,0,PWM,IN1,IN2);
 
@@ -178,21 +208,19 @@ void PID_control(float target)
         // error
         float e = target - pos;
 
-//        Serial.println("MQTT Connected");
-
         if(mqttClient.connected() != NULL){
           while(mqttClient.connected() == NULL)
           {
             Serial.println("Connecting to mqTT server");
             mqttClient.connect(clientID, mqttUser, mqttPwd);     // ASK
-            // mqttSubscribe(writeChannelID);
+            mqttSubscribe(writeChannelID);
           }
           mqttClient.loop();
         }
 
         dataArray[0] = pos;
-        dataArray[1] = e;
-
+        //dataArray[1] = e;
+        uploading = 1;
         mqttPublish();
         //oneM2MPublish(pos,e);
 
@@ -220,10 +248,6 @@ void PID_control(float target)
         
           eintegral = eintegral + e*deltaT;
         }
-//        if(eintegral > 255)
-//            eintegral = 255;
-//        if (eintegral < -255)
-//            eintegral = -255;
 
         // control signal
         float u = kp*e + kd*dedt + ki*eintegral;
@@ -263,8 +287,78 @@ void PID_control(float target)
 
       }
     }
+    uploading = 0;
 }
+void PID_reset(float target)
+{
+    
+    uint startTime = millis();
+    uint lastTime = millis();
+    bool use_integral = false;
+    int md = 0;
+    
+    while(millis()- startTime < PID_TIMER){
+      if(millis() - lastTime > 100){
+        setMotor(0,0,PWM,IN1,IN2);
 
+        // time difference
+        long currT = micros();
+        float deltaT = ((float) (currT - prevT))/( 1.0e6 );
+        prevT = currT;
+
+        // Read the positionL
+        float pos = 0; 
+        // noInterrupts(); // disable interrupts temporarily while reading
+        pos = (float)posi * 0.85714285714;
+        // interrupts(); // turn interrupts back on
+
+        // error
+        float e = target - pos;
+
+        // derivative
+        float dedt = (e-eprev)/(deltaT);
+
+        // integral
+        if(dedt == 0)
+          use_integral = true;
+        if (use_integral == true)
+        {
+            if (pos > target)
+            {
+              if (md == -1)
+                eintegral = 0;
+              md = 1;
+            }
+            else if (pos < target)
+            {
+              if (md == 1)
+                eintegral = 0;
+              md = -1;
+            }
+        
+          eintegral = eintegral + e*deltaT;
+        }
+        // control signal
+        float u = kp*e + kd*dedt + ki*eintegral;
+        // motor power
+        float pwr = fabs(u);
+        if( pwr > 255 ){
+            pwr = 255;
+        }
+        // motor direction
+        int dir = 1;
+        if(u<0){
+            dir = -1;
+        }
+        // signal the motor
+        setMotor(dir,pwr,PWM,IN1,IN2);
+        // store previous error
+        eprev = e;
+        lastTime = millis();
+
+      }
+    }
+}
 void setup() {
      // put your setup code here, to run once:
     Serial.begin(115200);
@@ -297,6 +391,7 @@ void setup() {
     configTime(0, 0, ntpServer);
     mqttClient.setServer(server, 1883);
     mqttClient.setCallback(mqttSubscriptionCallback);
+    mqttClient.setBufferSize(2048);
     while(mqttClient.connected() == NULL)
     {
       Serial.println("Connecting to mqTT server");
@@ -308,11 +403,20 @@ void setup() {
 void loop(){
   
   if (Serial.available() > 0) {
-    int num = Serial.parseInt();Serial.parseInt();
+    target = Serial.parseInt();Serial.parseInt();
 
     Serial.print("I received: ");
-    Serial.println(num);
-    PID_control(num);
+    Serial.println(target);
+    PID_control(target);
+    //PID_reset(0);
     setMotor(0,0,PWM,IN1,IN2);
+    
   }
+//  while(mqttClient.connected() == NULL)
+//  {
+//    Serial.println("Connecting to mqTT server");
+//    mqttClient.connect(clientID, mqttUser, mqttPwd);
+//    mqttSubscribe(writeChannelID);
+//  }
+//  mqttClient.loop();
 }
