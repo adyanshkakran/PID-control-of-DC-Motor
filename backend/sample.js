@@ -313,9 +313,9 @@ const callback = function(response) {
   });
 }
 
+// Posting to fields 2,3,4,5
 function postToMQTT(body)
 {
-  //2,3,4,5
   var path='/update?api_key=0EWEDZ5X4K5OT1B9';
   path+='&field2=';
   path+=body.kp;
@@ -334,19 +334,13 @@ function postToMQTT(body)
 
 app.post('/mqtt', async function(req,res){
   console.log(req.body);
-  //sdeletePrevious();
   postToMQTT(req.body);
-});
-
-app.get('/getGraph', function(req,res){
-  res.redirect("https://thingspeak.com/channels/1764340/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line");
 });
 
 //
 //this registers
 app.post("/register",async function (req, res){
   const givenUsername=req.body.username;  //Body has username 
-  console.log(givenUsername);
   const password = generator.generate({
     length: 10,
     numbers: true
@@ -355,18 +349,13 @@ app.post("/register",async function (req, res){
   const ret = await sendMailToUser(req.body.username,password);
   if(ret==true)
   {
-    console.log("here");
     res.redirect("/");
-    //res.sendFile(__dirname+ '/static/sign_in/index.html');
     db.set(givenUsername,password);
     client.set(givenUsername,password);
   }
   else 
   {
-    console.log("there");
     res.redirect("/");
-    // res.sendFile(__dirname+ '/static/sign_in/index.html');
-    // res.send("not done"); //not done
   }
 });
 
@@ -374,12 +363,7 @@ app.get('/logout', function(req,res){
   console.log("hey");
   res.cookie('pid_user', "no user loginned");
   res.redirect("/");
-}); 
-
-//it just tells us which user is loginned
-//used for debugging
-
-//starting our server
+});
 
 app.listen(PORT, function () {
     console.log(`Server is running on localhost:${PORT}`);
