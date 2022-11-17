@@ -1,27 +1,37 @@
-const JSONdb = require('simple-json-db');
-const db = new JSONdb('./UserCreds.json');
-const loginTimedb = new JSONdb('./UserLoginTime.json');
-//for mailing
-const nodemailer = require('nodemailer');
+import  JSONdb  from 'simple-json-db';
+import nodemailer from 'nodemailer';
+import generator from 'generate-password';
+import { createClient } from 'redis';
+import sessions from 'express-session';
+import ensureAuthenticated  from 'connect-ensure-authenticated';
+import cookieParser from 'cookie-parser';
+import  Express  from 'express';
+import http from 'https';
+import  express  from 'express';
 
-//for generating random password
-var generator = require('generate-password');
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-//for mqtt
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-//cookie session
-var sessions = require('express-session');
-const { ensureAuthenticated } = require('connect-ensure-authenticated');
-cookieParser = require('cookie-parser');
-const express = require("express");
+const client = createClient( {url : 'redis://redis-14520.c258.us-east-1-4.ec2.cloud.redislabs.com:14520/',
+password : "nE98bsr6S6BYifGSpvNhhWaUNqsmlcUB"});
+
+client.on('error', (err) => console.log('Redis Client Error', err));
+
+await client.connect();
+
+await client.set('key', 'value');
+const value = await client.get('key');
+console.log("lmao we are getting");
+console.log(value);
+
 var session;
 
 const PORT = process.env.PORT || 3000;
 const app = express();
 const oneDay = 1000 * 60 * 60 * 24;
-
-
-
 app.use(cookieParser());
 app.use(sessions({
     secret: "thisismysecrctekeyfhrgfgrfrty84fwir767",
@@ -29,6 +39,7 @@ app.use(sessions({
     cookie: { maxAge: oneDay },
     resave: false 
 }));
+const db = new JSONdb('./UserCreds.json');
 
 app.use(express.urlencoded({ extended: true}));
 
@@ -85,7 +96,7 @@ app.get('/static/index.html',(req,res)=>
 app.get('/static/experiment/index.html',(req,res)=>
 {
   const cookies=parseCookies(req);
-  const user=cookies['name'];
+  const user=cookies['pid_user'];
   if(user=="no user loginned")
   {
     res.redirect("/");
@@ -107,13 +118,16 @@ app.get('/static/experiment/scripts.js',(req,res)=>
 app.get('/static/experiments_page/index.html',(req,res)=>
 {
   const cookies=parseCookies(req);
-  const user=cookies['name'];
-  if(user=="no user loginned")
+  const user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
   {
     res.redirect("/");
   }
   else
+  {
+    console.log(user);
     res.sendFile(__dirname+ '/static/experiments_page/index.html');
+  }
 });
 
 app.get('/static/experiments_page/style.css',(req,res)=>
@@ -129,8 +143,8 @@ app.get('/static/experiments_page/scripts.js',(req,res)=>
 app.get('/static/experiment_theory/index.html',(req,res)=>
 {
   const cookies=parseCookies(req);
-  const user=cookies['name'];
-  if(user=="no user loginned")
+  const user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
   {
     res.redirect("/");
   }
@@ -162,8 +176,8 @@ app.get('/getTimeSpent',(req,res)=>
 {
   const cur=Date.now();
   const cookies=parseCookies(req);
-  const user=cookies['name'];
-  if(user=="no user loginned")
+  const user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
   {
     res.send("0");
   }
@@ -192,8 +206,8 @@ function parseCookies (request) {
 app.get("/debug",function(req,res)
 {
   const cookies=parseCookies(req);
-  console.log(cookies['name']);
-  res.send(cookies['name']);
+  console.log(cookies['pid_user']);
+  res.send(cookies['pid_user']);
 });
 
 //this checks the user creds and sets in cookie
@@ -201,8 +215,8 @@ app.get("/debug",function(req,res)
 app.get("/login",function (req, res)
 {
   const cookies=parseCookies(req);
-  const user=cookies['name'];
-  if(user=="no user loginned")
+  const user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
   {
     res.redirect("/static/sign_in/index.html");
   }
@@ -213,22 +227,40 @@ app.get("/login",function (req, res)
 
 });
 
+app.post('/change_password',async (req,res)=>
+{
+  const cookies=parseCookies(req);
+  var user=cookies['pid_user'];
+  if(user=="no user loginned" || user==undefined)
+  {
+    res.redirect("/");
+  }
+  else 
+  {
+    const new_password=req.body.new_password;
+    console.log(new_password);
+    await client.set(user,new_password);
+    db.set(user,new_password);
+  }
+});
+
 app.post("/check",
-function (req, res) {
+async function (req, res) {
     const givenUsername=req.body.username;
     const givenPassword=req.body.password;
-    const actualPassword=db.get(givenUsername);
+    var actualPassword=db.get(givenUsername);
+    //actualPassword=await client.get(givenUsername);
+    console.log(actualPassword);
     console.log(req.body.username);
     if(givenPassword==actualPassword)
     {
         session=req.session;
         session.userid=req.body.username;
         console.log(session.userid);
-        res.cookie('name', givenUsername);
+        res.cookie('pid_user', givenUsername);
         const cookies=parseCookies(req);
         console.log("lol");
-        console.log(cookies['name']);
-        loginTimedb.set(givenUsername,Date.now());
+        console.log(cookies['pid_user']);
         res.redirect("/static/experiments_page/index.html");
     }
     else
@@ -272,55 +304,51 @@ async function sendMailToUser(emailId,content)
   });
 } 
 
+const callback = function(response) {
+  var str = '';
+
+  //another chunk of data has been received, so append it to `str`
+  response.on('data', function (chunk) {
+    str += chunk;
+  });
+
+  //the whole response has been received, so we just print it out here
+  response.on('end', function () {
+    console.log(str);
+  });
+}
+
 function postToMQTT(body)
 {
-  var http = require('https');
   //2,3,4,5
   var path='/update?api_key=0EWEDZ5X4K5OT1B9';
   path+='&field2=';
   path+=body.kp;
   path+='&field3='
   path+=body.ki;
-  path+='&field3=';
+  path+='&field4=';
   path+=body.kd;
-  path+='&field4='
+  path+='&field5='
   path+=body.angle;
   var options = {
     host: 'api.thingspeak.com',
     path: path
   };
-  callback = function(response) {
-    var str = '';
-  
-    //another chunk of data has been received, so append it to `str`
-    response.on('data', function (chunk) {
-      str += chunk;
-    });
-  
-    //the whole response has been received, so we just print it out here
-    response.on('end', function () {
-      console.log(str);
-    });
-  }
   http.request(options, callback).end();
-
 }
 
-//postToMQTT(1,4);
-
 app.post('/mqtt', function(req,res){
-  const arguments=req.body;
+  const {argument}=req.body;
   console.log(arguments);
-  //str. split(',') .
-  //postToMQTT(1,3);
+  //sdeletePrevious();
   postToMQTT(arguments);
-
 });
 
 app.get('/getGraph', function(req,res){
   res.redirect("https://thingspeak.com/channels/1764340/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line");
 }); 
 
+//
 //this registers
 app.post("/register",async function (req, res){
   const givenUsername=req.body.username;  //Body has username 
@@ -330,13 +358,14 @@ app.post("/register",async function (req, res){
     numbers: true
   });
   console.log(password);
-  ret = await sendMailToUser(req.body.username,password);
+  const ret = await sendMailToUser(req.body.username,password);
   if(ret==true)
   {
     console.log("here");
     res.redirect("/");
     //res.sendFile(__dirname+ '/static/sign_in/index.html');
     db.set(givenUsername,password);
+    client.set(givenUsername,password);
   }
   else 
   {
@@ -349,7 +378,7 @@ app.post("/register",async function (req, res){
 
 app.get('/logout', function(req,res){
   console.log("hey");
-  res.cookie('name', "no user loginned");
+  res.cookie('pid_user', "no user loginned");
   res.redirect("/");
 }); 
 

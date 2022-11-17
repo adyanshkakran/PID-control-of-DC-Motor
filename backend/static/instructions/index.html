@@ -17,10 +17,20 @@
     </head>
     <body>
         <main>
-            
+            <h1 style="text-align: center; user-select: none;">Instructions to Operate</h1><br>
+            <div class="theory">
+                <h3></h3>
+                <h4>Use this simulation to learn how to use the PID Controller to control motor angle</h4>
+                <ol>
+                    <li>You are given four sliders connected to a text box. Enter the value you want to enter into these text boxes.</li>
+                    <li>For K<sub>p</sub>,K<sub>i</sub> and K<sub>d</sub>, the legal values are -100 to 100 while for required angle it is 0<sup>o</sup> to 360<sup>o</sup></li>
+                    
+                </ol>
+            </div>
             <button class="btn btn-primary" onclick="localStorage.setItem('timeLeft','900');location.href = '../experiment/index.html';">Proceed to
                 Simulation</button>
         </main>
+        <button class="btn btn-primary log-out" onclick="location.href = '../../logout'">Log out</button>
     </body>
     <script defer>
         VANTA.NET({
