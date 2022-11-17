@@ -53,8 +53,8 @@
             <button class="btn btn-primary submit-form" onclick="startSim()">Start Simulation</button>
         </form>
     </main>
-    <button class="btn btn-primary log-out" onclick="location.href = '../../logout';" >Log out</button>
-    <button class="btn btn-primary leave" onclick="location.href = '../experiment_theory/index.html';" >Leave Simulation</button>
+    <button class="btn btn-primary log-out" onclick="resetExperiment();location.href = '../../logout';" >Log out</button>
+    <button class="btn btn-primary leave" onclick="resetExperiment();location.href = '../experiment_theory/index.html';" >Leave Simulation</button>
     <h4 id="time-left">15:00</h4>
 </body>
 <script defer>

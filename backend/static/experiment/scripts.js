@@ -36,7 +36,6 @@ function bind_to_slider(slider,input,min,max,from,step){
     
     $range.ionRangeSlider({
         skin: "round",
-        // type: "single",
         min: min,
         max: max,
         from: from,
@@ -69,19 +68,15 @@ bind_to_slider(".kp-slider",".kp-input",-100,100,0,0,0.1);
 bind_to_slider(".ki-slider",".ki-input",-100,100,0,0,0.1);
 bind_to_slider(".kd-slider",".kd-input",-100,100,0,0,0.1);
 bind_to_slider(".angle-slider",".angle-input",0,360,180,1);
+$(".form").submit(function(e) {
+    e.preventDefault();
+});
 
 function startSim() {
-    
     let kp = $(".kp-input").val();
     let ki = $(".ki-input").val();
     let kd = $(".kd-input").val();
     let angle = $(".angle-input").val();
-  /*  fetch('../../../mqtt',{
-        method: 'POST',
-        // body: 'field2='+kp+'&field3='+ki+'&field4='+kd+'&field5='+angle
-       // body : kp+','+ki+','+kd+','+angle
-       body:"fjdsn"
-    })*/
     fetch('../../../mqtt', {
     method: 'POST', // or 'PUT'
     headers: {
@@ -96,8 +91,26 @@ function startSim() {
     .catch((error) => {
         console.error('Error:', error);
     });
+    let submit = document.getElementsByClassName("submit-form")[0]
+    submit.disabled = true
+    setTimeout(() => {
+        submit.disabled = false
+    }, 17000);
 }
 
 function resetExperiment(){
-    
+    fetch('../../../mqtt', {
+    method: 'POST', // or 'PUT'
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({kp:-1,ki:-1,kd:-1,angle:-1}),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        console.log('Success:', data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }
