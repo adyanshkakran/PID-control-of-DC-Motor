@@ -14,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
     <script src="../vanta.net.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.0.1/chart.umd.js" integrity="sha512-gQhCDsnnnUfaRzD8k1L5llCCV6O9HN09zClIzzeJ8OJ9MpGmIlCxm+pdCkqTwqJ4JcjbojFr79rl2F1mzcoLMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -21,7 +22,8 @@
     <main>
         <div class="container">
             <div class="container-fluid camera"></div>
-            <iframe class="container-fluid graph" style="border: 1px solid #cccccc; padding: 0;" src="https://thingspeak.com/channels/1922377/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line&update=15"></iframe>
+            <div class="container-fluid graph"><canvas id="graph" style="width: 100%;height:100%"></canvas></div>
+            <!-- <iframe class="container-fluid graph" style="border: 1px solid #cccccc; padding: 0;" src="https://thingspeak.com/channels/1922377/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line&update=15"></iframe> -->
         </div>
         <form class="form">
             <div class="sliders">
