@@ -66,6 +66,16 @@ app.get('/static/sign_up/style.css',(req,res)=>
   res.sendFile(__dirname+ '/static/sign_up/style.css');
 });
 
+app.get('/static/change_password/index.html',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/change_password/index.html');
+});
+
+app.get('/static/change_password/style.css',(req,res)=>
+{
+  res.sendFile(__dirname+ '/static/change_password/style.css');
+});
+
 app.get('/static/scripts.js',(req,res)=>
 {
   res.sendFile(__dirname+ '/static/scripts.js');
@@ -195,14 +205,6 @@ function parseCookies (request) {
   return list;
 }
 
-//debug if the cookie is set
-app.get("/debug",function(req,res)
-{
-  const cookies=parseCookies(req);
-  console.log(cookies['pid_user']);
-  res.send(cookies['pid_user']);
-});
-
 //this checks the user creds and sets in cookie
 //
 app.get("/login",function (req, res)
@@ -223,17 +225,17 @@ app.get("/login",function (req, res)
 app.post('/change_password',async (req,res)=>
 {
   const cookies=parseCookies(req);
-  var user=cookies['pid_user'];
+  let user=cookies['pid_user'];
   if(user=="no user loginned" || user==undefined)
   {
     res.redirect("/");
   }
   else 
   {
-    const new_password=req.body.new_password;
-    console.log(new_password);
+    const new_password=req.body.password;
     await client.set(user,new_password);
     db.set(user,new_password);
+    res.redirect("/static/experiments_page/index.html")
   }
 });
 
@@ -242,9 +244,6 @@ async function (req, res) {
     const givenUsername=req.body.username;
     const givenPassword=req.body.password;
     var actualPassword=db.get(givenUsername);
-    //actualPassword=await client.get(givenUsername);
-    console.log(actualPassword);
-    console.log(req.body.username);
     if(givenPassword==actualPassword)
     {
         session=req.session;
@@ -252,8 +251,6 @@ async function (req, res) {
         console.log(session.userid);
         res.cookie('pid_user', givenUsername);
         const cookies=parseCookies(req);
-        console.log("lol");
-        console.log(cookies['pid_user']);
         res.redirect("/static/experiments_page/index.html");
     }
     else
@@ -358,7 +355,6 @@ app.post("/register",async function (req, res){
 });
 
 app.get('/logout', function(req,res){
-  console.log("hey");
   res.cookie('pid_user', "no user loginned");
   res.redirect("/");
 });
