@@ -66,6 +66,44 @@ void readEncoder(){
     }
 }
 
+int buffer_size=0;
+unsigned long lastUpdateTime = 0;         //storing lastupdateTime
+unsigned long updateInterval = 20*1000L;  //20 seconds of delay
+String field_value[10000];                
+String client_thingspeak="api.thingspeak.com"; 
+
+void makeHttpPostContent()
+{
+  HTTPClient http;  
+  http.begin(client_thingspeak, 80);
+  http.addHeader("Content-Type", "application/json");
+  String post_data="";
+  post_data+="{";
+  post_data+=String("\"write_api_key\"")+String(":")+String("\"")+String(writeAPIKey)+String("\"")+String(",");
+  post_data+="\"updates\":[";
+  for(int i=0;i<buffer_size;i++)
+  {
+    post_data+="{";
+    if(i==0)
+    {
+      post_data+=String("\"delta_t\"")+String(":")+String("\"")+String("0")+String("\"");
+    }
+    else 
+    {
+      post_data+=String("\"delta_t\"")+String(":")+String("\"")+String("1")+String("\"");
+    }
+    post_data+=",";
+    post_data+="\"field1\":";
+    post_data+="\""+String(field_value[i])+"\"";
+    post_data+="},";
+  }
+  post_data+="]";
+  http.POST(post_data);
+  http.end();
+  buffer_size=0;
+  lastUpdateTime=millis();
+}
+
 void mqttPublish()
 {
     String dataString = "";
@@ -77,9 +115,7 @@ void mqttPublish()
     dataString += "status=MQTTPUBLISH";
     Serial.println(dataString);
     String topicString = "channels/"+String(writeChannelID)+"/publish";
-
-    mqttClient.publish(topicString.c_str(), dataString.c_str());
-  
+    //mqttClient.publish(topicString.c_str(), dataString.c_str());
 }
 float input[4];
 float target;
@@ -401,7 +437,10 @@ void setup() {
 }
 
 void loop(){
-  
+  if (millis() - lastUpdateTime >=  updateInterval && buffer_size>0) 
+  {
+    makeHttpPostContent(jsonBuffer);
+  }
   if (Serial.available() > 0) {
     target = Serial.parseInt();Serial.parseInt();
 
