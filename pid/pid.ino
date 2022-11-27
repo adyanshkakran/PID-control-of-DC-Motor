@@ -2,7 +2,6 @@
 #include <time.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
-#include <ThingSpeak.h>
 #include <HTTPClient.h>
 
 HTTPClient http;
@@ -19,6 +18,8 @@ WiFiClient client;
 const char * ntpServer = "pool.ntp.org"; 
 
 
+//const char *ssid = "esw-m19@iiith";
+//const char *password = "e5W-eMai@3!20hOct";
 const char *ssid = "adyansh";
 const char *password = "password";
 const char *server = "mqtt3.thingspeak.com";
@@ -29,8 +30,6 @@ const char *writeAPIKey = "0EWEDZ5X4K5OT1B9";
 const char *clientID = "KRwGOj0dFAcoDTw3Ky4aISs";
 const char *mqttUser = clientID;
 const char *mqttPwd = "oJFDlzrM/o4kx3Of1T5C7LrY";
-
-int uploading = 0;
 
 PubSubClient mqttClient(server,1883, client);
 
@@ -54,7 +53,7 @@ int fieldArray[] = {1,0,0,0,0,0,0,0};
 int dataArray[] = {-1,-1,-1,-1,-1,-1,-1,-1};
 
 uint lastTime = 0;
-#define PID_TIMER 10000
+#define PID_TIMER 15000
 
 void readEncoder(){
     int b = digitalRead(ENCB);
@@ -68,14 +67,14 @@ void readEncoder(){
 
 int buffer_size=0;
 unsigned long lastUpdateTime = 0;         //storing lastupdateTime
-unsigned long updateInterval = 20*1000L;  //20 seconds of delay
-String field_value[10000];                
-String client_thingspeak="api.thingspeak.com"; 
+unsigned long updateInterval = 17*1000L;  //20 seconds of delay
+String field_value[150];
+String client_thingspeak="https://api.thingspeak.com/channels/1922377/bulk_update.json"; 
 
 void makeHttpPostContent()
 {
-  HTTPClient http;  
-  http.begin(client_thingspeak, 80);
+//  HTTPClient http2;  
+  http.begin(client_thingspeak);
   http.addHeader("Content-Type", "application/json");
   String post_data="";
   post_data+="{";
@@ -95,10 +94,14 @@ void makeHttpPostContent()
     post_data+=",";
     post_data+="\"field1\":";
     post_data+="\""+String(field_value[i])+"\"";
-    post_data+="},";
+    post_data+="}";
+    if(i != buffer_size-1)
+      post_data += ",";
   }
-  post_data+="]";
-  http.POST(post_data);
+  post_data+="]}";
+  Serial.println(post_data);
+  int res = http.POST(post_data);
+  Serial.println(res);
   http.end();
   buffer_size=0;
   lastUpdateTime=millis();
@@ -115,44 +118,71 @@ void mqttPublish()
     dataString += "status=MQTTPUBLISH";
     Serial.println(dataString);
     String topicString = "channels/"+String(writeChannelID)+"/publish";
-    //mqttClient.publish(topicString.c_str(), dataString.c_str());
+    
+  //  mqttClient.publish(topicString.c_str(), dataString.c_str());
+  
 }
-float input[4];
+float input[10];
 float target;
 void mqttSubscriptionCallback( char* topic, byte* payload, unsigned int length ) {
-//  if(uploading)
-//    return;
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
   int semi_c=0;
-  int inpno=0;
+  int inpno=0,simulate = 0;
   String inp_val="";
   for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+//    Serial.print((char)payload[i]);
     if((char)payload[i]==':'){
       semi_c++;
       if(semi_c>5){
-        while((char)payload[i+1]!=','){
+        while((char)payload[i]!=','){
           i++;
           inp_val+=(char)payload[i];
+          
         }
+        inp_val = inp_val.substring(1,inp_val.length()-2);
+        if(inp_val!="ul" && inpno == 0){
+          Serial.println("exiting");  
+          Serial.println(inp_val);
+          return;
+        }
+        else if(inpno==4 && inp_val=="-1"){
+          kp = 10;
+          kd = 0.025;
+          ki = 5;
+          PID_reset(0);
+          setMotor(0,0,PWM,IN1,IN2);
+          return;
+        }
+        Serial.println(inp_val);
         input[inpno]=inp_val.toFloat();
         inpno++;
         inp_val="";
+        if(inpno==5){
+          break;
+        }
       }
     }
     
   }
-  kp = input[0];
-  kd =  input[1];
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  Serial.println("");
+  kp = input[1];
   ki =  input[2];
-  target= input[3];
+  kd =  input[3];
+  target= input[4];
+  Serial.print("kp: ");
   Serial.println(kp);
+  Serial.print("ki: ");
   Serial.println(ki);
+  Serial.print("kd: ");
   Serial.println(kd);
+  Serial.print("target: ");
   Serial.println(target);
-  Serial.println();
+  Serial.println("*");
+  PID_control(target);
+  //PID_reset(0);
+  setMotor(0,0,PWM,IN1,IN2);
   
 }
 
@@ -218,15 +248,15 @@ void PID_control(float target)
     uint lastTime = millis();
     bool use_integral = false;
     int md = 0;
-    
+//    while(mqttClient.connected() == NULL)
+//      {
+//        Serial.println("Connecting to mqTT server");
+//        mqttClient.connect(clientID, mqttUser, mqttPwd);
+//        mqttSubscribe(writeChannelID);
+//      }
+//      mqttClient.loop();
     while(millis()- startTime < PID_TIMER){
-      while(mqttClient.connected() == NULL)
-      {
-        Serial.println("Connecting to mqTT server");
-        mqttClient.connect(clientID, mqttUser, mqttPwd);
-        mqttSubscribe(writeChannelID);
-      }
-      mqttClient.loop();
+      
       if(millis() - lastTime > 100){
         setMotor(0,0,PWM,IN1,IN2);
 
@@ -244,20 +274,22 @@ void PID_control(float target)
         // error
         float e = target - pos;
 
-        if(mqttClient.connected() != NULL){
-          while(mqttClient.connected() == NULL)
-          {
-            Serial.println("Connecting to mqTT server");
-            mqttClient.connect(clientID, mqttUser, mqttPwd);     // ASK
-            mqttSubscribe(writeChannelID);
-          }
-          mqttClient.loop();
+//        if(mqttClient.connected() != NULL){
+//          while(mqttClient.connected() == NULL)
+//          {
+//            Serial.println("Connecting to mqTT server");
+//            mqttClient.connect(clientID, mqttUser, mqttPwd);     // ASK
+//            mqttSubscribe(writeChannelID);
+//          }
+//          mqttClient.loop();
+//        }
+        if(millis() - startTime <= 3000){
+          dataArray[0] = pos;
+          field_value[buffer_size++] = pos;
         }
-
-        dataArray[0] = pos;
         //dataArray[1] = e;
-        uploading = 1;
-        mqttPublish();
+//        mqttPublish();
+        
         //oneM2MPublish(pos,e);
 
         // derivative
@@ -323,7 +355,7 @@ void PID_control(float target)
 
       }
     }
-    uploading = 0;
+    
 }
 void PID_reset(float target)
 {
@@ -333,7 +365,7 @@ void PID_reset(float target)
     bool use_integral = false;
     int md = 0;
     
-    while(millis()- startTime < PID_TIMER){
+    while(millis()- startTime < 10000){
       if(millis() - lastTime > 100){
         setMotor(0,0,PWM,IN1,IN2);
 
@@ -439,23 +471,13 @@ void setup() {
 void loop(){
   if (millis() - lastUpdateTime >=  updateInterval && buffer_size>0) 
   {
-    makeHttpPostContent(jsonBuffer);
+    makeHttpPostContent();
   }
-  if (Serial.available() > 0) {
-    target = Serial.parseInt();Serial.parseInt();
-
-    Serial.print("I received: ");
-    Serial.println(target);
-    PID_control(target);
-    //PID_reset(0);
-    setMotor(0,0,PWM,IN1,IN2);
-    
+  while(mqttClient.connected() == NULL)
+  {
+    Serial.println("Connecting to mqTT server");
+    mqttClient.connect(clientID, mqttUser, mqttPwd);
+    mqttSubscribe(writeChannelID);
   }
-//  while(mqttClient.connected() == NULL)
-//  {
-//    Serial.println("Connecting to mqTT server");
-//    mqttClient.connect(clientID, mqttUser, mqttPwd);
-//    mqttSubscribe(writeChannelID);
-//  }
-//  mqttClient.loop();
+  mqttClient.loop();
 }

@@ -38,10 +38,13 @@ main {
     justify-content:space-between;
 }
 
-.submit-form {
-    display: block;
-    margin-left: auto;
-    margin-right: 0;
+.buttons{
+    display: flex;
+    justify-content: right;
+}
+
+.show-graph {
+    margin-right: 2%;
 }
 
 .label {

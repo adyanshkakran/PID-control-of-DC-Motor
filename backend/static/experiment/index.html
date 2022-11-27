@@ -21,7 +21,7 @@
 <body>
     <main>
         <div class="container">
-            <div class="container-fluid camera"></div>
+            <div class="container-fluid camera"><iframe width="100%" height="100%" src="http://192.168.227.127/"></iframe></div>
             <div class="container-fluid graph"><canvas id="graph" style="width: 100%;height:100%"></canvas></div>
             <!-- <iframe class="container-fluid graph" style="border: 1px solid #cccccc; padding: 0;" src="https://thingspeak.com/channels/1922377/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line&update=15"></iframe> -->
         </div>
@@ -52,7 +52,10 @@
                     <input type="text" class="angle-slider" id="angle">
                 </div>
             </div>
-            <button class="btn btn-primary submit-form" onclick="startSim()">Start Simulation</button>
+            <div class="container-fluid buttons">
+                <button class="btn btn-primary show-graph" onclick="clearGraph();makeGraph()">Show graph</button>
+                <button class="btn btn-primary submit-form" onclick="startSim()">Start Simulation</button>
+            </div>
         </form>
     </main>
     <button class="btn btn-primary log-out" onclick="resetExperiment();location.href = '../../logout';" >Log out</button>
