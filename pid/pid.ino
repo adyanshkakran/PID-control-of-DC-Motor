@@ -1,25 +1,10 @@
-#include "analogWrite.h"
-#include <time.h>
-#include <PubSubClient.h>
-#include <WiFi.h>
-#include <HTTPClient.h>
-
+#include "details.h"
 HTTPClient http;
+HTTPClient http_onem2m;
 IPAddress ip;
 WiFiClient client;
-#define CSE_IP "esw-onem2m.iiit.ac.in"  
-#define CSE_PORT 443
-#define OM2M_ORGIN "nHP#Sx:i2iYGl"
-#define OM2M_MN "/~/in-cse/in-name/"
-#define OM2M_AE "Team-20"
-#define OM2M_DATA_CONT "Node-1/Data"
-#define INTERVAL 15000L
 
 const char * ntpServer = "pool.ntp.org"; 
-
-
-//const char *ssid = "esw-m19@iiith";
-//const char *password = "e5W-eMai@3!20hOct";
 const char *ssid = "adyansh";
 const char *password = "password";
 const char *server = "mqtt3.thingspeak.com";
@@ -53,7 +38,6 @@ int fieldArray[] = {1,0,0,0,0,0,0,0};
 int dataArray[] = {-1,-1,-1,-1,-1,-1,-1,-1};
 
 uint lastTime = 0;
-#define PID_TIMER 15000
 
 void readEncoder(){
     int b = digitalRead(ENCB);
@@ -66,10 +50,10 @@ void readEncoder(){
 }
 
 int buffer_size=0;
-unsigned long lastUpdateTime = 0;         //storing lastupdateTime
-unsigned long updateInterval = 17*1000L;  //20 seconds of delay
+unsigned long lastUpdateTime = 0;
+unsigned long updateInterval = 17*1000L;
 String field_value[150];
-String client_thingspeak="https://api.thingspeak.com/channels/1922377/bulk_update.json"; 
+String client_thingspeak="https://api.thingspeak.com/channels/1922377/bulk_update.json";
 
 void makeHttpPostContent()
 {
@@ -198,17 +182,18 @@ int buffer_size_onem2m=0;
 float position_onem2m[200];
 
 void oneM2MPublish(){
-  for(int i=0;i<buffer_size_onem2m;i++)
+  for(int i=0;i<min(5,buffer_size_onem2m);i++)
   {
     float pos=position_onem2m[i];
     String data;
     String server = "https://" + String() + CSE_IP + ":" + String() + CSE_PORT + String() + OM2M_MN;
 
-    http.begin(server + String() + OM2M_AE + "/" + OM2M_DATA_CONT + "/");
+    http_onem2m.begin(server + String() + OM2M_AE + "/" + OM2M_DATA_CONT + "/");
+    Serial.println(server + String() + OM2M_AE + "/" + OM2M_DATA_CONT + "/");
 
-    http.addHeader("X-M2M-Origin", OM2M_ORGIN);
-    http.addHeader("Content-Type", "application/json;ty=4");
-    http.addHeader("Content-Length", "100");
+    http_onem2m.addHeader("X-M2M-Origin", OM2M_ORGIN);
+    http_onem2m.addHeader("Content-Type", "application/json;ty=4");
+    http_onem2m.addHeader("Content-Length", "100");
 
     data = "[" + String(pos)  +   + "]"; 
     String req_data = String() + "{\"m2m:cin\": {"
@@ -226,8 +211,9 @@ void oneM2MPublish(){
 
       +
       "}}";
-    int code = http.POST(req_data);
-    http.end();
+    Serial.println(req_data);
+    int code = http_onem2m.POST(req_data);
+    http_onem2m.end();
     Serial.println(code);
   }
   buffer_size_onem2m=0;
