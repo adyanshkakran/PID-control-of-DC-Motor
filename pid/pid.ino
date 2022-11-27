@@ -194,35 +194,43 @@ void mqttSubscribe( long subChannelID ){
   
 }
 
-void oneM2MPublish(float pos,float e){
-  String data;
-  String server = "https://" + String() + CSE_IP + ":" + String() + CSE_PORT + String() + OM2M_MN;
+int buffer_size_onem2m=0;
+float position_onem2m[200];
 
-  http.begin(server + String() + OM2M_AE + "/" + OM2M_DATA_CONT + "/");
+void oneM2MPublish(){
+  for(int i=0;i<buffer_size_onem2m;i++)
+  {
+    float pos=position_onem2m[i];
+    String data;
+    String server = "https://" + String() + CSE_IP + ":" + String() + CSE_PORT + String() + OM2M_MN;
 
-  http.addHeader("X-M2M-Origin", OM2M_ORGIN);
-  http.addHeader("Content-Type", "application/json;ty=4");
-  http.addHeader("Content-Length", "100");
+    http.begin(server + String() + OM2M_AE + "/" + OM2M_DATA_CONT + "/");
 
-  data = "[" + String(pos) + ", " + String(e) +   + "]"; 
-  String req_data = String() + "{\"m2m:cin\": {"
+    http.addHeader("X-M2M-Origin", OM2M_ORGIN);
+    http.addHeader("Content-Type", "application/json;ty=4");
+    http.addHeader("Content-Length", "100");
 
-    +
-    "\"con\": \"" + data + "\","
+    data = "[" + String(pos)  +   + "]"; 
+    String req_data = String() + "{\"m2m:cin\": {"
 
-    +
-    "\"lbl\": \"" + "V1.0.0" + "\","
+      +
+      "\"con\": \"" + data + "\","
 
-    //+ "\"rn\": \"" + "cin_"+String(i++) + "\","
+      +
+      "\"lbl\": \"" + "V1.0.0" + "\","
 
-    +
-    "\"cnf\": \"text\""
+      //+ "\"rn\": \"" + "cin_"+String(i++) + "\","
 
-    +
-    "}}";
-  int code = http.POST(req_data);
-  http.end();
-  Serial.println(code);
+      +
+      "\"cnf\": \"text\""
+
+      +
+      "}}";
+    int code = http.POST(req_data);
+    http.end();
+    Serial.println(code);
+  }
+  buffer_size_onem2m=0;
 }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
@@ -291,7 +299,7 @@ void PID_control(float target)
 //        mqttPublish();
         
         //oneM2MPublish(pos,e);
-
+        position_onem2m[buffer_size_onem2m++]=pos; 
         // derivative
         float dedt = (e-eprev)/(deltaT);
 
@@ -472,6 +480,7 @@ void loop(){
   if (millis() - lastUpdateTime >=  updateInterval && buffer_size>0) 
   {
     makeHttpPostContent();
+    oneM2MPublish();
   }
   while(mqttClient.connected() == NULL)
   {
