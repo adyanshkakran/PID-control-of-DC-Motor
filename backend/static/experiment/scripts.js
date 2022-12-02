@@ -145,7 +145,7 @@ function resetExperiment() {
 let graph;
 
 function makeGraph() {
-    fetch(`https://api.thingspeak.com/channels/1922377/fields/1.json?results=35`)
+    fetch(`https://api.thingspeak.com/channels/1922377/fields/1.json?results=33`)
         .then((response) => response.json())
         .then((data) => {
             data = data.feeds.filter(x => x.field1)
